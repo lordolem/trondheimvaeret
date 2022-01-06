@@ -9,27 +9,53 @@ import tokens
 # Authenticate to Twitter
 auth = tweepy.OAuthHandler(tokens.consumer_key, tokens.consumer_secret)
 auth.set_access_token(tokens.access_token, tokens.access_token_secret)
-
-# Create API object
 api = tweepy.API(auth)
 
 print("Program started")
 
-def get_weather(time):
+def get_weather():
     weather = Yr(location_name='Norge/Trøndelag/Trondheim/Trondheim')
-    data = weather.dictionary
+    data_dict = weather.dictionary
+    data_now = weather.now()
 
-    city = data["weatherdata"]["location"]["name"]
-    temp = data["weatherdata"]["forecast"]["tabular"]["time"][0]["temperature"]["@value"]
+    sunrise = data_dict["weatherdata"]["sun"]["@rise"].split("T")[1]
+    sunset = data_dict["weatherdata"]["sun"]["@set"].split("T")[1]
+    temp = data_now["temperature"]["@value"]
+    precipitation = data_now["precipitation"]["@value"]
+    wind_speed = data_now["windSpeed"]["@mps"]
+    wind_dir = data_now["windDirection"]["@code"]
     
-    if time == "21:00":
-        extra = " God natt! "
-    elif time == "08:00":
-        extra = " God morgen! "
-    else:
-        extra = " "
+    return (sunrise, sunset, temp, precipitation, wind_speed, wind_dir)
 
-    return f"#TrondheimVaeret Temperaturen i {city} er: {temp}°C. Kl {time}.{extra}Kilde: YR"
+def get_clock_emoji(time):
+    if time == "06:00" or time == "18:00":
+        return "🕕"
+    elif time == "10:00":
+        return "🕙"
+    elif time == "14:00":
+        return "🕑"
+    elif time == "21:00":
+        return "🕘"
+    elif time == "00:00":
+        return "🕛"
+    else:
+        return "-"
+
+def pretty(time):
+    sunrise, sunset, temp, precipitation, wind_speed, wind_dir = get_weather()
+    output = []
+    output.append(f"📍 Akkurat nå er det {temp}° i Trondheim!\n#TrondheimVaeret")
+    output.append(f"💨 {wind_speed} m/s {wind_dir}")
+    output.append(f"🌧 {precipitation} mm")
+    if time == "06:00":
+        output.append("------")
+        output.append(f"🌅 {sunrise}")
+        output.append(f"🌇 {sunset}")
+    output.append("------")
+    output.append(f"{get_clock_emoji(time)} Oppdatert: {time}")
+    output.append("📖 Kilde: YR")
+
+    return "\n".join(output)
 
 while True:
     now = datetime.datetime.now()
@@ -37,8 +63,8 @@ while True:
    
     print("Running: ", time)
 
-    if time == "08:00" or time == "12:00" or time == "16:00" or time == "18:00" or time == "21:00":
-        api.update_status(get_weather(time))
+    if time == "06:00" or time == "10:00" or time == "14:00" or time == "18:00" or time == "21:00" or time == "00:00":
+        api.update_status(pretty(time))
         print("Tweet published")
         sleep(360)
     
