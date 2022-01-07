@@ -14,16 +14,15 @@ auth.set_access_token(tokens.access_token, tokens.access_token_secret)
 api = tweepy.API(auth)
 
 yr_headers = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Connection': 'keep-alive',
+    'User-Agent': '@trondheimvaeret github.com/lordolem/trondheimvaeret',
 }
 
 yr_params = (
     ('lat', '63.4224'),
-    ('lon', '10.41261'),
+    ('lon', '10.4126'),
     ('altitude', '10'),
 )
+
 
 xml_headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -46,8 +45,8 @@ def get_sunrise_sunset():
     
     # Add the date to the params
     xml_params = (
-        ('lat', '63.4224'),
-        ('lon', '10.41261'),
+        ('lat', '63.422'),
+        ('lon', '10.412'),
         ('date', f'{today_date}'),
         ('offset', ' 01:00'),
     )
