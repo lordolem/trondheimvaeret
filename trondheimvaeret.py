@@ -14,6 +14,7 @@ api = tweepy.API(auth)
 print("Program started")
 
 def get_wind_dir(deg):
+    deg = float(deg)
     if deg > 337.5 or deg <= 22.5:
         return "N"
     elif deg > 22.5 and deg <= 67.5:
@@ -78,6 +79,9 @@ def pretty(time):
     output.append("📖 Kilde: YR")
 
     return "\n".join(output)
+
+time = "06:00"
+api.update_status(pretty(time))
 
 while True:
     now = datetime.datetime.now()
