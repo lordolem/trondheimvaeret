@@ -7,7 +7,6 @@ import datetime
 import requests
 import tokens
 
-
 # Authenticate to Twitter
 auth = tweepy.OAuthHandler(tokens.consumer_key, tokens.consumer_secret)
 auth.set_access_token(tokens.access_token, tokens.access_token_secret)
@@ -17,22 +16,16 @@ yr_headers = {
     'User-Agent': '@trondheimvaeret github.com/lordolem/trondheimvaeret',
 }
 
+# 63.4245, 10.4174
 yr_params = (
-    ('lat', '63.4224'),
-    ('lon', '10.4126'),
+    ('lat', '63.4245'),
+    ('lon', '10.4174'),
     ('altitude', '10'),
 )
 
 
 xml_headers = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Connection': 'keep-alive',
-    'Upgrade-Insecure-Requests': '1',
-    'Sec-Fetch-Dest': 'document',
-    'Sec-Fetch-Mode': 'navigate',
-    'Sec-Fetch-Site': 'cross-site',
+    'User-Agent': '@trondheimvaeret github.com/lordolem/trondheimvaeret',
 }
 
 print("Program started")
@@ -153,12 +146,13 @@ def pretty(time):
 while True:
     now = datetime.datetime.now()
     time = now.strftime("%H:%M")
+    runningtime = now.strftime("%H:%M:%S")
    
-    print("Running: ", time)
+    print(f"Running: {runningtime}")
 
     if time == "06:00" or time == "10:00" or time == "14:00" or time == "18:00" or time == "21:00" or time == "00:00":
         api.update_status(pretty(time))
-        print("Tweet published")
+        print("Tweet published - Going to sleep for 360 seconds...")
         sleep(360)
     
     sleep(10)
