@@ -1,18 +1,68 @@
 #!/usr/bin/python3
 
-import tweepy
-from yr.libyr import Yr
-import datetime
 from time import sleep
+import xml.etree.ElementTree as ET
+import tweepy
+import datetime
+import requests
 import tokens
+
 
 # Authenticate to Twitter
 auth = tweepy.OAuthHandler(tokens.consumer_key, tokens.consumer_secret)
 auth.set_access_token(tokens.access_token, tokens.access_token_secret)
 api = tweepy.API(auth)
 
+yr_headers = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Connection': 'keep-alive',
+}
+
+yr_params = (
+    ('lat', '63.4224'),
+    ('lon', '10.41261'),
+    ('altitude', '10'),
+)
+
+xml_headers = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'cross-site',
+}
+
 print("Program started")
 
+# Get the time for sunrise and sunset
+def get_sunrise_sunset():
+    # Format the date
+    today = datetime.date.today()
+    today_date = today.strftime("%Y-%m-%d")
+    
+    # Add the date to the params
+    xml_params = (
+        ('lat', '63.4224'),
+        ('lon', '10.41261'),
+        ('date', f'{today_date}'),
+        ('offset', ' 01:00'),
+    )
+
+    # Get the data
+    response = requests.get('https://api.met.no/weatherapi/sunrise/2.0', headers=xml_headers, params=xml_params)
+    # Something make it readable https://docs.python.org/3/library/xml.etree.elementtree.html
+    xml_tree = ET.fromstring(response.content)
+    # Remove unwanted characters
+    sunrise = xml_tree[1][0][5].attrib["time"].split("T")[1].split("+")[0]
+    sunset = xml_tree[1][0][8].attrib["time"].split("T")[1].split("+")[0]
+    
+    return sunrise, sunset
+
+# Convert the wind direction to abbreviation
 def get_wind_dir(deg):
     deg = float(deg)
     if deg > 337.5 or deg <= 22.5:
@@ -33,23 +83,38 @@ def get_wind_dir(deg):
         return "NV"
     else:
         return "404"
-    
+
+# Get all the weather variables from YR
 def get_weather():
-    weather = Yr(location_name='Norge/Trøndelag/Trondheim/Trondheim')
-    data_dict = weather.dictionary
-    data_now = weather.now()
+    # Get time and dates
+    current_date = datetime.date.today()
+    current_hour = datetime.datetime.now().strftime("%H")
+    # "2022-01-07T10:00:00Z"
+    yr_date_format = f"{current_date}T{current_hour}:00:00Z"
+    response = requests.get('https://api.met.no/weatherapi/locationforecast/2.0/', headers=yr_headers, params=yr_params)
+    data = response.json()
 
-    sunrise = data_dict["weatherdata"]["sun"]["@rise"].split("T")[1]
-    sunset = data_dict["weatherdata"]["sun"]["@set"].split("T")[1]
-    temp = data_now["temperature"]["@value"]
-    precipitation = data_now["precipitation"]["@value"]
-    wind_speed = data_now["windSpeed"]["@mps"]
-    wind_deg = data_now["windDirection"]["@deg"]
+    sunrise, sunset = get_sunrise_sunset()
     
-    wind_dir = get_wind_dir(wind_deg)
+    # Find correct index for timeseries. Most likely the first or second one but whatever.
+    # Not included, because I am not sure if its correct or not.
+    # for i in range(len(data["properties"]["timeseries"])):
+    #     if data["properties"]["timeseries"][i]["time"] == yr_date_format:
+    #         correct_index = i
     
-    return (sunrise, sunset, temp, precipitation, wind_speed, wind_dir)
+    correct_index = 0
+    
+    temp = data["properties"]["timeseries"][correct_index]["data"]["instant"]["details"]["air_temperature"]
+    temp_high = data["properties"]["timeseries"][correct_index]["data"]["next_6_hours"]["details"]["air_temperature_max"]
+    temp_low = data["properties"]["timeseries"][correct_index]["data"]["next_6_hours"]["details"]["air_temperature_min"]
+    precipitation = data["properties"]["timeseries"][correct_index]["data"]["next_6_hours"]["details"]["precipitation_amount"]
+    precipitation_prob = data["properties"]["timeseries"][correct_index]["data"]["next_6_hours"]["details"]["probability_of_precipitation"]
+    wind_speed = data["properties"]["timeseries"][correct_index]["data"]["instant"]["details"]["wind_speed"]
+    wind_dir = get_wind_dir(data["properties"]["timeseries"][correct_index]["data"]["instant"]["details"]["wind_from_direction"])
+    
+    return sunrise, sunset, temp, temp_high, temp_low, precipitation, precipitation_prob, wind_speed, wind_dir
 
+# Find the best clock emoji for the current time
 def get_clock_emoji(time):
     if time == "06:00" or time == "18:00":
         return "🕕"
@@ -64,12 +129,17 @@ def get_clock_emoji(time):
     else:
         return "-"
 
+# Make the tweet pretty 
 def pretty(time):
-    sunrise, sunset, temp, precipitation, wind_speed, wind_dir = get_weather()
+    sunrise, sunset, temp, temp_high, temp_low, precipitation, precipitation_prob, wind_speed, wind_dir = get_weather()
+    sunrise, sunset, temp, temp_high, temp_low, precipitation, precipitation_prob, wind_speed, wind_dir = str(sunrise), str(sunset), str(temp), str(temp_high), str(temp_low), str(precipitation), str(precipitation_prob), str(wind_speed), str(wind_dir)
     output = []
     output.append(f"📍 Akkurat nå er det {temp}°C i Trondheim!\n#TrondheimVaeret")
     output.append(f"💨 {wind_speed} m/s 🧭 {wind_dir}")
     output.append(f"🌧 {precipitation} mm")
+    output.append("------")
+    output.append(f"🔥 {temp_high}°C")
+    output.append(f"❄️ {temp_low}°C")
     if time == "06:00":
         output.append("------")
         output.append(f"🌅 {sunrise}")
@@ -80,9 +150,7 @@ def pretty(time):
 
     return "\n".join(output)
 
-time = "06:00"
-api.update_status(pretty(time))
-
+# Main while function to keep the bot running
 while True:
     now = datetime.datetime.now()
     time = now.strftime("%H:%M")
