@@ -80,9 +80,6 @@ def pretty(time):
 
     return "\n".join(output)
 
-time = "06:00"
-api.update_status(pretty(time))
-
 while True:
     now = datetime.datetime.now()
     time = now.strftime("%H:%M")
