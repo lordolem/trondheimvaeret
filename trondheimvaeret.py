@@ -1,16 +1,21 @@
 #!/usr/bin/python3
 
-from time import sleep
 import xml.etree.ElementTree as ET
-import tweepy
 import datetime
 import requests
+
+# ↓ Remove when testing ↓
+
 import tokens
+import tweepy
+from time import sleep
 
 # Authenticate to Twitter
 auth = tweepy.OAuthHandler(tokens.consumer_key, tokens.consumer_secret)
 auth.set_access_token(tokens.access_token, tokens.access_token_secret)
 api = tweepy.API(auth)
+
+# ↑ Remove when testing ↑
 
 yr_headers = {
     'User-Agent': '@trondheimvaeret github.com/lordolem/trondheimvaeret',
@@ -96,13 +101,17 @@ def get_weather():
     
     correct_index = 0
     
-    temp = data["properties"]["timeseries"][correct_index]["data"]["instant"]["details"]["air_temperature"]
-    temp_high = data["properties"]["timeseries"][correct_index]["data"]["next_6_hours"]["details"]["air_temperature_max"]
-    temp_low = data["properties"]["timeseries"][correct_index]["data"]["next_6_hours"]["details"]["air_temperature_min"]
-    precipitation = data["properties"]["timeseries"][correct_index]["data"]["next_6_hours"]["details"]["precipitation_amount"]
-    precipitation_prob = data["properties"]["timeseries"][correct_index]["data"]["next_6_hours"]["details"]["probability_of_precipitation"]
-    wind_speed = data["properties"]["timeseries"][correct_index]["data"]["instant"]["details"]["wind_speed"]
-    wind_dir = get_wind_dir(data["properties"]["timeseries"][correct_index]["data"]["instant"]["details"]["wind_from_direction"])
+    base_path = data["properties"]["timeseries"][correct_index]["data"]
+    base_path_instant = base_path["instant"]["details"]
+    base_path_6_hours = base_path["next_6_hours"]["details"]
+    
+    temp = base_path_instant["air_temperature"]
+    temp_high = base_path_6_hours["air_temperature_max"]
+    temp_low = base_path_6_hours["air_temperature_min"]
+    precipitation = base_path_6_hours["precipitation_amount"]
+    precipitation_prob = base_path_6_hours["probability_of_precipitation"]
+    wind_speed = base_path_instant["wind_speed"]
+    wind_dir = get_wind_dir(base_path_instant["wind_from_direction"])
     
     return sunrise, sunset, temp, temp_high, temp_low, precipitation, precipitation_prob, wind_speed, wind_dir
 
@@ -142,6 +151,7 @@ def pretty(time):
 
     return "\n".join(output)
 
+# ↓ Remove when testing ↓
 # Main while function to keep the bot running
 while True:
     now = datetime.datetime.now()
