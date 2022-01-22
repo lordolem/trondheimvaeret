@@ -62,24 +62,25 @@ def get_sunrise_sunset():
 # Convert the wind direction to abbreviation
 def get_wind_dir(deg):
     deg = float(deg)
-    if deg > 337.5 or deg <= 22.5:
+    if 337.5 > deg <= 22.5:
         return "N"
-    elif deg > 22.5 and deg <= 67.5:
+    elif 22.5 < deg <= 67.5:
         return "NØ"
-    elif deg > 67.5 and deg <= 112.5:
+    elif 67.5 < deg <= 112.5:
         return "Ø"
-    elif deg > 112.5 and deg <= 157.5:
+    elif 112.5 < deg <= 157.5:
         return "SØ"
-    elif deg > 157.5 and deg <= 202.5:
+    elif 157.5 < deg <= 202.5:
         return "S"
-    elif deg > 202.5 and deg <= 247.5:
+    elif 202.5 < deg <= 247.5:
         return "SV"
-    elif deg > 247.5 and deg <= 292.5:
+    elif 247.5 < deg <= 292.5:
         return "V"
-    elif deg > 292.5 and deg <= 337.5:
+    elif 292.5 < deg <= 337.5:
         return "NV"
     else:
         return "404"
+
 
 # Get all the weather variables from YR
 def get_weather():

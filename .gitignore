@@ -2,3 +2,4 @@ tokens.py
 __pycache__/
 test.py
 example.json
+.idea
