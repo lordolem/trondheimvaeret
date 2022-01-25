@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import xml.etree.ElementTree as ET
 import datetime
@@ -40,7 +40,7 @@ def get_sunrise_sunset():
     # Format the date
     today = datetime.date.today()
     today_date = today.strftime("%Y-%m-%d")
-    
+
     # Add the date to the params
     xml_params = (
         ('lat', '63.422'),
@@ -56,7 +56,7 @@ def get_sunrise_sunset():
     # Remove unwanted characters
     sunrise = xml_tree[1][0][5].attrib["time"].split("T")[1].split("+")[0]
     sunset = xml_tree[1][0][8].attrib["time"].split("T")[1].split("+")[0]
-    
+
     return sunrise, sunset
 
 # Convert the wind direction to abbreviation
@@ -93,19 +93,19 @@ def get_weather():
     data = response.json()
 
     sunrise, sunset = get_sunrise_sunset()
-    
+
     # Find correct index for timeseries. Most likely the first or second one but whatever.
     # Not included, because I am not sure if its correct or not.
     # for i in range(len(data["properties"]["timeseries"])):
     #     if data["properties"]["timeseries"][i]["time"] == yr_date_format:
     #         correct_index = i
-    
+
     correct_index = 0
-    
+
     base_path = data["properties"]["timeseries"][correct_index]["data"]
     base_path_instant = base_path["instant"]["details"]
     base_path_6_hours = base_path["next_6_hours"]["details"]
-    
+
     temp = base_path_instant["air_temperature"]
     temp_high = base_path_6_hours["air_temperature_max"]
     temp_low = base_path_6_hours["air_temperature_min"]
@@ -113,7 +113,7 @@ def get_weather():
     precipitation_prob = base_path_6_hours["probability_of_precipitation"]
     wind_speed = base_path_instant["wind_speed"]
     wind_dir = get_wind_dir(base_path_instant["wind_from_direction"])
-    
+
     return sunrise, sunset, temp, temp_high, temp_low, precipitation, precipitation_prob, wind_speed, wind_dir
 
 # Find the best clock emoji for the current time
@@ -131,7 +131,7 @@ def get_clock_emoji(time):
     else:
         return "-"
 
-# Make the tweet pretty 
+# Make the tweet pretty
 def pretty(time):
     sunrise, sunset, temp, temp_high, temp_low, precipitation, precipitation_prob, wind_speed, wind_dir = get_weather()
     sunrise, sunset, temp, temp_high, temp_low, precipitation, precipitation_prob, wind_speed, wind_dir = str(sunrise), str(sunset), str(temp), str(temp_high), str(temp_low), str(precipitation), str(precipitation_prob), str(wind_speed), str(wind_dir)
@@ -158,12 +158,12 @@ while True:
     now = datetime.datetime.now()
     time = now.strftime("%H:%M")
     runningtime = now.strftime("%H:%M:%S")
-   
+
     print(f"Running: {runningtime}")
 
     if time == "06:00" or time == "10:00" or time == "14:00" or time == "18:00" or time == "21:00" or time == "00:00":
         api.update_status(pretty(time))
         print("Tweet published - Going to sleep for 360 seconds...")
         sleep(360)
-    
+
     sleep(10)
