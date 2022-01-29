@@ -124,7 +124,7 @@ def get_emoji():
     else:
         return "☁"
 
-def get_temp()
+def get_temp():
     _, instant, _ = get_data()
     return instant["air_temperature"]
 
