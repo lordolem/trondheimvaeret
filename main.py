@@ -31,22 +31,15 @@ def get_clock_emoji(time):
     else:
         return "-"
 
-def getEmoji(symbol):
-    return "☁"
-
 # Make the tweet pretty
-def pretty(time):
-    """
-    Tid cloud temp regn vind
-    """
-
+def make_tweet(time):
     output = []
     
-    output.append(f"📍 Akkurat nå er det {weather.temp}°C i Trondheim!")
+    output.append(f"📍 Akkurat nå er det {weather.temp}°C {weather.emoji} i Trondheim!")
     output.append(f"💨 {weather.wind_speed}({weather.gust_speed}) m/s 🧭 {weather.wind_dir}")
-
-    if weather.precipitation != "0.0":
-        output.append(f"🌧 {weather.precipitation} mm")
+    
+    if weather.precipitation > 0.0:
+        output.append(f"🌧 {weather.precipitation_min} - {weather.precipitation_max} mm")
 
     output.append(f"{get_clock_emoji(time)} Oppdatert: {time}")
     output.append("📖 Kilde: YR")
@@ -63,7 +56,7 @@ if __name__ == "__main__":
         print(f"Running... {now}")
 
         if time in publish_times:
-            tweet = pretty(time)
+            tweet = make_tweet(time)
             api.update_status(tweet)
             print(tweet)
             sleep(360)

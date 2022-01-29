@@ -20,8 +20,8 @@ xml_headers = {
 }
 
 
-response = requests.get('https://api.met.no/weatherapi/locationforecast/2.0/', headers=yr_headers, params=yr_params)
-data = response.json()
+yr_response = requests.get('https://api.met.no/weatherapi/locationforecast/2.0/', headers=yr_headers, params=yr_params)
+data = yr_response.json()
 
 correct_index = 0
 
@@ -76,21 +76,67 @@ def get_wind_dir():
     else:
         return "404"
 
+def get_moon_phase():
+    return moon_phase_response
+
+def get_emoji():
+    # Get symbol code
+    symbol = base_path["next_1_hours"]["summary"]["symbol_code"]
+
+    # If symbol code ends with "*_night/day/*", split at "_"
+    if "_" in symbol:
+        symbol = symbol.split("_")[0]
+
+    # if symbol in [""]:
+    #     return "🌪" # Tornado
+
+    if symbol in ["clearsky"]:
+        return "☀" # Sun
+    elif symbol in ["fair"]:
+        return "🌤" # Sun behind small cloud
+    elif symbol in ["rainandthunder", "heavyrainandthunder", "heavyrainshowersandthunder", "lightrainandthunder", "lightrainshowersandthunder"]:
+        return "⛈" # Cloud with lightning and rain
+    elif symbol in ["partlycloudy"]:
+        return "🌥" # Sun behind big cloud
+    elif symbol in ["snowshowers", "rainshowers", "heavyrainshowers", "lightrain", "lightrainshowers", "lightsleetshowers"]:
+        return "🌦" # Sun behind big cloud with rain
+    elif symbol in ["lightssleetshowersandthunder", "rainshowersandthunder"]:
+        return "🌦🌩" # Cloud with lightning
+    elif symbol in ["snowshowersandthunder", "snowandthunder", "lightssnowshowersandthunder"]:
+        return "🌨🌩"
+    elif symbol in ["snow", "heavysnow", "heavysnowandthunder", "lightsnow", "lightsnowandthunder"]:
+        return "🌨" # Cloud with snow
+    elif symbol in ["heavyrain", "rain"]:
+        return "🌧" # Cloud with rain
+    elif symbol in ["cloudy"]:
+        return "☁" # Normal cloud
+    elif symbol in ["clearsky"]:
+        return "🌙" # Moon
+    elif symbol in ["fog"]:
+        return "🌫" # Fog
+    elif symbol in ["sleet", "heavysleet", "lightsleet", "heavysleetshowers", "heavysnowshowers", "heavysnowshowersandthunder"]:
+        return "🌨🌧" # Snow and rain
+    elif symbol in ["sleetshowersandthunder", "sleetshowers", "sleetandthunder", "heavysleetandthunder", "heavysleetshowersandthunder", "lightsleetandthunder"]:
+        return "🌨🌧⚡" # Snow, rain and thunder
+    else:
+        return "☁"
+
 def get_temp():
-    return str(instant["air_temperature"])
+    return instant["air_temperature"]
 
 def get_precipitation():
-    return str(one_hour["precipitation_amount"])
+    return one_hour["precipitation_amount_min"], one_hour["precipitation_amount_max"], one_hour["precipitation_amount"]
 
 def get_wind_speed():
-    return str(instant["wind_speed"])
+    return instant["wind_speed"]
 
 def get_gust_speed():
-    return str(instant["wind_speed_of_gust"])
+    return instant["wind_speed_of_gust"]
 
 
 wind_dir = get_wind_dir()
 temp = get_temp()
-precipitation = get_precipitation()
+precipitation_min, precipitation_max, precipitation = get_precipitation()
 wind_speed = get_wind_speed()
 gust_speed = get_gust_speed()
+emoji = get_emoji()
