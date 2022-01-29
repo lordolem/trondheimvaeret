@@ -19,15 +19,17 @@ xml_headers = {
     'User-Agent': '@trondheimvaeret github.com/omfj/trondheimvaeret',
 }
 
+def get_data():
+    yr_response = requests.get('https://api.met.no/weatherapi/locationforecast/2.0/', headers=yr_headers, params=yr_params)
+    data = yr_response.json()
 
-yr_response = requests.get('https://api.met.no/weatherapi/locationforecast/2.0/', headers=yr_headers, params=yr_params)
-data = yr_response.json()
+    correct_index = 0
 
-correct_index = 0
+    base_path = data["properties"]["timeseries"][correct_index]["data"]
+    instant = base_path["instant"]["details"]
+    one_hour = base_path["next_1_hours"]["details"]
 
-base_path = data["properties"]["timeseries"][correct_index]["data"]
-instant = base_path["instant"]["details"]
-one_hour = base_path["next_1_hours"]["details"]
+    return base_path, instant, one_hour
 
 
 # Get the time for sunrise and sunset
@@ -56,6 +58,8 @@ def get_sunrise_sunset():
 
 
 def get_wind_dir():
+    _, instant, _ = get_data()
+
     deg = float(instant["wind_from_direction"])
     if 337.5 > deg <= 22.5:
         return "N"
@@ -76,11 +80,10 @@ def get_wind_dir():
     else:
         return "404"
 
-def get_moon_phase():
-    return moon_phase_response
-
 def get_emoji():
     # Get symbol code
+    base_path, _, _ = get_data()
+
     symbol = base_path["next_1_hours"]["summary"]["symbol_code"]
 
     # If symbol code ends with "*_night/day/*", split at "_"
@@ -121,16 +124,20 @@ def get_emoji():
     else:
         return "☁"
 
-def get_temp():
+def get_temp()
+    _, instant, _ = get_data()
     return instant["air_temperature"]
 
 def get_precipitation():
+    _, _, one_hour = get_data()
     return one_hour["precipitation_amount_min"], one_hour["precipitation_amount_max"], one_hour["precipitation_amount"]
 
 def get_wind_speed():
+    _, instant, _ = get_data()
     return instant["wind_speed"]
 
 def get_gust_speed():
+    _, instant, _ = get_data()
     return instant["wind_speed_of_gust"]
 
 
