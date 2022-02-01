@@ -38,7 +38,7 @@ def make_tweet(time):
     emoji = weather.get_emoji();
     wind_speed = weather.get_wind_speed();
     gust_speed = weather.get_gust_speed();
-    wind_dir = weather.get_gust_speed();
+    wind_dir = weather.get_wind_dir();
     precipitation_min, precipitation_max, precipitation = weather.get_precipitation();
     
     output.append(f"📍 Akkurat nå er det {temp}°C {emoji} i Trondheim!")
