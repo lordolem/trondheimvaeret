@@ -34,12 +34,18 @@ def get_clock_emoji(time):
 # Make the tweet pretty
 def make_tweet(time):
     output = []
+    temp = weather.get_temp();
+    emoji = weather.get_emoji();
+    wind_speed = weather.get_wind_speed();
+    gust_speed = weather.get_gust_speed();
+    wind_dir = weather.get_gust_speed();
+    precipitation_min, precipitation_max, precipitation = weather.get_precipitation();
     
-    output.append(f"📍 Akkurat nå er det {weather.temp}°C {weather.emoji} i Trondheim!")
-    output.append(f"💨 {weather.wind_speed}({weather.gust_speed}) m/s 🧭 {weather.wind_dir}")
+    output.append(f"📍 Akkurat nå er det {temp}°C {emoji} i Trondheim!")
+    output.append(f"💨 {wind_speed}({gust_speed}) m/s 🧭 {wind_dir}")
     
-    if weather.precipitation > 0.0:
-        output.append(f"🌧 {weather.precipitation_min} - {weather.precipitation_max} mm")
+    if precipitation > 0.0:
+        output.append(f"🌧 {precipitation_min} - {precipitation_max} mm")
 
     output.append(f"{get_clock_emoji(time)} Oppdatert: {time}")
     output.append("📖 Kilde: YR")

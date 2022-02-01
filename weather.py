@@ -139,11 +139,3 @@ def get_wind_speed():
 def get_gust_speed():
     _, instant, _ = get_data()
     return instant["wind_speed_of_gust"]
-
-
-wind_dir = get_wind_dir()
-temp = get_temp()
-precipitation_min, precipitation_max, precipitation = get_precipitation()
-wind_speed = get_wind_speed()
-gust_speed = get_gust_speed()
-emoji = get_emoji()
