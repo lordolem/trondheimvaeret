@@ -3,3 +3,4 @@ __pycache__/
 test.py
 example.json
 .idea
+.DS_Store
